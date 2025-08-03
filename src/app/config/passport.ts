@@ -7,7 +7,54 @@ import {
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
 import { Role } from "../modules/user/user.interface";
+import { Strategy as LocalStrategy } from "passport-local";
+import bcryptjs from "bcryptjs";
 
+// local login
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password",
+    },
+    async (email: string, password: string, done) => {
+      try {
+        const isUserExist = await User.findOne({ email });
+        if (!isUserExist) {
+          return done(null, false, { message: "User does not exist" });
+        }
+
+        // Check  google authenticated
+        const isGoogleAuthenticated = isUserExist.auths.some(
+          (providerObjects) => providerObjects.provider === "google"
+        );
+
+        if (isGoogleAuthenticated && !isUserExist.password) {
+          return done(null, false, {
+            message:
+              "You have authenticated through Google. If you want to login with credentials, then at first login with google and set a password for your Gmail and then you can login with email and password.",
+          });
+        }
+
+        const isPasswordMatched = await bcryptjs.compare(
+          password as string,
+          isUserExist.password as string
+        );
+        if (!isPasswordMatched) {
+          return done(null, false, { message: "Password does not match" });
+        }
+
+        return done(null, isUserExist);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+        done(error);
+      }
+    }
+  )
+);
+
+// Google Login
 passport.use(
   new GoogleStrategy(
     {
@@ -54,17 +101,17 @@ passport.use(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 passport.serializeUser((user: any, done: (err: any, id?: unknown) => void) => {
-    done(null, user._id)
-})
+  done(null, user._id);
+});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 passport.deserializeUser(async (id: string, done: any) => {
-    try {
-        const user = await User.findById(id)
-        done(null, user)
-    } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
-        done(error)
-    }
-})
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.log(error);
+    done(error);
+  }
+});
