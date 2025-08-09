@@ -23,22 +23,6 @@ export const createUserZodSchema = z.object({
     .max(100, {
       message: "Email addresss cannot exceed 50 character",
     }),
-  password: z
-    .string({
-      invalid_type_error: "Password must be string",
-    })
-    .min(8, {
-      message: "Password must be at least 8 character long",
-    })
-    .regex(/^(?=.*[A-Z])/, {
-      message: "Password must contains at least 1 uppercase letter.",
-    })
-    .regex(/^(?=.*[!@#$%^&*])/, {
-      message: "Password must contains at least 1 special character.",
-    })
-    .regex(/^(?=.*\d)/, {
-      message: "Password must contains at least 1 Number.",
-    }),
   phone: z
     .string({
       invalid_type_error: "Phone Number must be string",
@@ -116,3 +100,23 @@ export const updateUserZodSchema = z.object({
     })
     .optional(),
 });
+
+
+
+
+// password: z
+  //   .string({
+  //     invalid_type_error: "Password must be string",
+  //   })
+  //   .min(8, {
+  //     message: "Password must be at least 8 character long",
+  //   })
+  //   .regex(/^(?=.*[A-Z])/, {
+  //     message: "Password must contains at least 1 uppercase letter.",
+  //   })
+  //   .regex(/^(?=.*[!@#$%^&*])/, {
+  //     message: "Password must contains at least 1 special character.",
+  //   })
+  //   .regex(/^(?=.*\d)/, {
+  //     message: "Password must contains at least 1 Number.",
+  //   }),
