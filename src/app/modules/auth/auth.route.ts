@@ -3,12 +3,23 @@ import { AuthControllers } from "./auth.controllers";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
 import passport from "passport";
+import { envVars } from "../../config/env";
 
 const router = Router();
 
 router.post("/login", AuthControllers.credentialsLogin);
 router.post("/refresh-token", AuthControllers.getNewAccessToken);
 router.post("/logout", AuthControllers.logout);
+router.post(
+  "/change-password",
+  checkAuth(...Object.values(Role)),
+  AuthControllers.changePassword
+);
+
+router.post("/set-password", checkAuth(...Object.values(Role)), AuthControllers.setPassword)
+
+// Frontend -> forget-password -> email -> user status check -> short expiration token (valid for 10 min) -> email -> Fronted Link http://localhost:5173/reset-password?email=nafis1@gmail.com&token=token -> frontend e  query theke user er email and token extract anbo -> new password user theke nibe -> backend er /reset-password api -> authorization = token -> newPassword -> token verify -> password hash -> save user password   
+router.post("/forgot-password", AuthControllers.forgotPassword)
 router.post(
   "/reset-password",
   checkAuth(...Object.values(Role)),
@@ -28,7 +39,7 @@ router.get(
 );
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  passport.authenticate("google", { failureRedirect: `${envVars.FRONTEND_URL}/login?error=There is some issues with your account. Please contact with out support team!` }),
   AuthControllers.googleCallbackController
 );
 
